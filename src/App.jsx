@@ -12,19 +12,23 @@ function App() {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('overview');
 
-  useEffect(() => {
-    // Load dashboard data
-    fetch('/api/dashboard_data.json')
-      .then(res => res.json())
-      .catch(() => {
-        // Fallback to local data
-        return import('./data/dashboard_data.json').then(m => m.default);
-      })
-      .then(data => {
-        setData(data);
-        setLoading(false);
-      });
-  }, []);
+useEffect(() => {
+  fetch("/api/dashboard_data.json")
+    .then(res => {
+      if (!res.ok) {
+        throw new Error("Failed to fetch dashboard data");
+      }
+      return res.json();
+    })
+    .then(data => {
+      setData(data);
+      setLoading(false);
+    })
+    .catch(err => {
+      console.error(err);
+      setLoading(false);
+    });
+}, []);
 
   if (loading) {
     return <div className="loading">Loading dashboard...</div>;
