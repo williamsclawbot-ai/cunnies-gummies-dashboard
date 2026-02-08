@@ -1,0 +1,281 @@
+{
+  "summary": {
+    "last_updated": "2026-02-08T13:57:59.992868",
+    "total_orders_all_time": 40641,
+    "total_revenue_all_time": 3424280.012,
+    "total_units_sold": 58769.5,
+    "active_months": 6,
+    "average_monthly_revenue": 570713.3353333334
+  },
+  "monthly_trends": [
+    {
+      "month": "2025-02-01",
+      "orders": 0,
+      "qty_per_order": 0,
+      "aov": 0,
+      "returns": 0
+    },
+    {
+      "month": "2025-03-01",
+      "orders": 0,
+      "qty_per_order": 0,
+      "aov": 0,
+      "returns": 0
+    },
+    {
+      "month": "2025-04-01",
+      "orders": 0,
+      "qty_per_order": 0,
+      "aov": 0,
+      "returns": 0
+    },
+    {
+      "month": "2025-05-01",
+      "orders": 0,
+      "qty_per_order": 0,
+      "aov": 0,
+      "returns": 0
+    },
+    {
+      "month": "2025-06-01",
+      "orders": 0,
+      "qty_per_order": 0,
+      "aov": 0,
+      "returns": 0
+    },
+    {
+      "month": "2025-07-01",
+      "orders": 0,
+      "qty_per_order": 0,
+      "aov": 0,
+      "returns": 0
+    },
+    {
+      "month": "2025-08-01",
+      "orders": 0,
+      "qty_per_order": 0,
+      "aov": 0,
+      "returns": 0
+    },
+    {
+      "month": "2025-09-01",
+      "orders": 3,
+      "qty_per_order": 1.7,
+      "aov": 56.66,
+      "returns": -3
+    },
+    {
+      "month": "2025-10-01",
+      "orders": 9906,
+      "qty_per_order": 1.5,
+      "aov": 86.181,
+      "returns": -16
+    },
+    {
+      "month": "2025-11-01",
+      "orders": 5492,
+      "qty_per_order": 1.4,
+      "aov": 82.896,
+      "returns": -7
+    },
+    {
+      "month": "2025-12-01",
+      "orders": 8806,
+      "qty_per_order": 1.5,
+      "aov": 88.551,
+      "returns": -11
+    },
+    {
+      "month": "2026-01-01",
+      "orders": 13666,
+      "qty_per_order": 1.4,
+      "aov": 81.062,
+      "returns": -47
+    },
+    {
+      "month": "2026-02-01",
+      "orders": 2768,
+      "qty_per_order": 1.4,
+      "aov": 82.212,
+      "returns": -14
+    }
+  ],
+  "forecast": {
+    "projected_orders": 8413,
+    "projected_aov": "$83.94",
+    "projected_revenue": "$706,201",
+    "confidence": "70%"
+  },
+  "products": [
+    {
+      "name": "Sour Watermelon",
+      "sku": "102270",
+      "units_sold": 25777
+    },
+    {
+      "name": "Sour Peach",
+      "sku": "102269",
+      "units_sold": 17081
+    },
+    {
+      "name": "Strawberry",
+      "sku": "102255",
+      "units_sold": 8487
+    },
+    {
+      "name": "Green Apple",
+      "sku": "101972",
+      "units_sold": 6146
+    },
+    {
+      "name": "Raspberry Lemonade Pre-Workout",
+      "sku": "102272",
+      "units_sold": 691
+    },
+    {
+      "name": "Watermelon Pre-Workout",
+      "sku": "102273",
+      "units_sold": 342
+    },
+    {
+      "name": "Green Apple Pre-Workout",
+      "sku": "102271",
+      "units_sold": 319
+    }
+  ],
+  "product_analysis": {
+    "total_products": 7,
+    "top_product": {
+      "name": "Sour Watermelon",
+      "sku": "102270",
+      "units_sold": 25777
+    },
+    "top_3": [
+      {
+        "name": "Sour Watermelon",
+        "sku": "102270",
+        "units_sold": 25777
+      },
+      {
+        "name": "Sour Peach",
+        "sku": "102269",
+        "units_sold": 17081
+      },
+      {
+        "name": "Strawberry",
+        "sku": "102255",
+        "units_sold": 8487
+      }
+    ],
+    "total_units_sold": 58843,
+    "by_percentage": [
+      {
+        "name": "Sour Watermelon",
+        "sku": "102270",
+        "units_sold": 25777,
+        "percentage": 43.806400081573
+      },
+      {
+        "name": "Sour Peach",
+        "sku": "102269",
+        "units_sold": 17081,
+        "percentage": 29.02809170164676
+      },
+      {
+        "name": "Strawberry",
+        "sku": "102255",
+        "units_sold": 8487,
+        "percentage": 14.423125945312101
+      },
+      {
+        "name": "Green Apple",
+        "sku": "101972",
+        "units_sold": 6146,
+        "percentage": 10.444742790136464
+      },
+      {
+        "name": "Raspberry Lemonade Pre-Workout",
+        "sku": "102272",
+        "units_sold": 691,
+        "percentage": 1.1743113029587207
+      },
+      {
+        "name": "Watermelon Pre-Workout",
+        "sku": "102273",
+        "units_sold": 342,
+        "percentage": 0.581207620277688
+      },
+      {
+        "name": "Green Apple Pre-Workout",
+        "sku": "102271",
+        "units_sold": 319,
+        "percentage": 0.5421205580952705
+      }
+    ]
+  },
+  "reorder_recommendations": [
+    {
+      "product": "Sour Watermelon",
+      "sku": "102270",
+      "estimated_monthly_burn": "5288 units",
+      "recommended_reorder_qty": 84614,
+      "lead_time_weeks": 12,
+      "air_shipping_days": 7,
+      "sea_shipping_days": 42
+    },
+    {
+      "product": "Sour Peach",
+      "sku": "102269",
+      "estimated_monthly_burn": "3504 units",
+      "recommended_reorder_qty": 56069,
+      "lead_time_weeks": 12,
+      "air_shipping_days": 7,
+      "sea_shipping_days": 42
+    },
+    {
+      "product": "Strawberry",
+      "sku": "102255",
+      "estimated_monthly_burn": "1741 units",
+      "recommended_reorder_qty": 27859,
+      "lead_time_weeks": 12,
+      "air_shipping_days": 7,
+      "sea_shipping_days": 42
+    },
+    {
+      "product": "Green Apple",
+      "sku": "101972",
+      "estimated_monthly_burn": "1261 units",
+      "recommended_reorder_qty": 20174,
+      "lead_time_weeks": 12,
+      "air_shipping_days": 7,
+      "sea_shipping_days": 42
+    },
+    {
+      "product": "Raspberry Lemonade Pre-Workout",
+      "sku": "102272",
+      "estimated_monthly_burn": "142 units",
+      "recommended_reorder_qty": 2268,
+      "lead_time_weeks": 12,
+      "air_shipping_days": 7,
+      "sea_shipping_days": 42
+    },
+    {
+      "product": "Watermelon Pre-Workout",
+      "sku": "102273",
+      "estimated_monthly_burn": "70 units",
+      "recommended_reorder_qty": 1122,
+      "lead_time_weeks": 12,
+      "air_shipping_days": 7,
+      "sea_shipping_days": 42
+    },
+    {
+      "product": "Green Apple Pre-Workout",
+      "sku": "102271",
+      "estimated_monthly_burn": "65 units",
+      "recommended_reorder_qty": 1047,
+      "lead_time_weeks": 12,
+      "air_shipping_days": 7,
+      "sea_shipping_days": 42
+    }
+  ]
+}
