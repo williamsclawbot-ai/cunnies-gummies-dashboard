@@ -1,403 +1,328 @@
-// Mock Data Service
-// Generates time-series data for all metrics across configurable date ranges
-// Uses Australia/Brisbane timezone (UTC+10)
+/**
+ * Data Service - Shopify API Integration
+ * Fetches real data from Shopify Admin API
+ */
 
+import { shopifyClient, ORDERS_BY_DATE_RANGE_QUERY, PRODUCT_VARIANTS_QUERY, INVENTORY_LEVELS_QUERY } from './shopifyClient';
 import { 
   subDays, 
   startOfDay, 
-  startOfWeek, 
-  startOfMonth, 
-  startOfYear,
   format,
-  eachDayOfInterval,
-  eachWeekOfInterval,
-  eachMonthOfInterval,
-  eachQuarterOfInterval
+  isBefore,
+  isAfter,
 } from 'date-fns';
-import { utcToZonedTime } from 'date-fns-tz';
+import { utcToZonedTime, zonedTimeToUtc } from 'date-fns-tz';
 
 const TZ = 'Australia/Brisbane';
 
-// Base product data - mirrors real Shopify structure
-const products = [
-  {
-    productId: 'prod_sour_watermelon',
-    productTitle: 'Sour Watermelon Gummies',
-    variants: [
-      { variantId: 'var_sw_100g', variantTitle: '100g Pack', sku: 'CUNW-100G' },
-      { variantId: 'var_sw_500g', variantTitle: '500g Pack', sku: 'CUNW-500G' },
-    ],
-  },
-  {
-    productId: 'prod_sour_peach',
-    productTitle: 'Sour Peach Gummies',
-    variants: [
-      { variantId: 'var_sp_100g', variantTitle: '100g Pack', sku: 'CUNP-100G' },
-      { variantId: 'var_sp_500g', variantTitle: '500g Pack', sku: 'CUNP-500G' },
-    ],
-  },
-  {
-    productId: 'prod_strawberry',
-    productTitle: 'Strawberry Gummies',
-    variants: [
-      { variantId: 'var_sb_100g', variantTitle: '100g Pack', sku: 'CUNS-100G' },
-      { variantId: 'var_sb_500g', variantTitle: '500g Pack', sku: 'CUNS-500G' },
-    ],
-  },
-  {
-    productId: 'prod_green_apple',
-    productTitle: 'Green Apple Gummies',
-    variants: [
-      { variantId: 'var_ga_100g', variantTitle: '100g Pack', sku: 'CUNA-100G' },
-      { variantId: 'var_ga_500g', variantTitle: '500g Pack', sku: 'CUNA-500G' },
-    ],
-  },
-  {
-    productId: 'prod_pre_workout',
-    productTitle: 'Pre-Workout Energy Gummies',
-    variants: [
-      { variantId: 'var_pw_blue', variantTitle: 'Blue Razz', sku: 'CUNPW-BLUE' },
-      { variantId: 'var_pw_mango', variantTitle: 'Mango Madness', sku: 'CUNPW-MANGO' },
-      { variantId: 'var_pw_citrus', variantTitle: 'Citrus Surge', sku: 'CUNPW-CITRUS' },
-    ],
-  },
-];
-
-// Base inventory levels (units)
-const inventoryLevels = {
-  'CUNW-100G': 15000,
-  'CUNW-500G': 8500,
-  'CUNP-100G': 12000,
-  'CUNP-500G': 6200,
-  'CUNS-100G': 5500,
-  'CUNS-500G': 2800,
-  'CUNA-100G': 4200,
-  'CUNA-500G': 1900,
-  'CUNPW-BLUE': 800,
-  'CUNPW-MANGO': 650,
-  'CUNPW-CITRUS': 520,
-};
-
-// Monthly sales velocity (units sold per month average)
-const monthlySalesVelocity = {
-  'CUNW-100G': 2100,
-  'CUNW-500G': 1400,
-  'CUNP-100G': 1200,
-  'CUNP-500G': 950,
-  'CUNS-100G': 480,
-  'CUNS-500G': 360,
-  'CUNA-100G': 320,
-  'CUNA-500G': 240,
-  'CUNPW-BLUE': 45,
-  'CUNPW-MANGO': 38,
-  'CUNPW-CITRUS': 32,
-};
-
-// Unit pricing
-const pricing = {
-  'CUNW-100G': 12.99,
-  'CUNW-500G': 45.99,
-  'CUNP-100G': 12.99,
-  'CUNP-500G': 45.99,
-  'CUNS-100G': 12.99,
-  'CUNS-500G': 45.99,
-  'CUNA-100G': 12.99,
-  'CUNA-500G': 45.99,
-  'CUNPW-BLUE': 22.99,
-  'CUNPW-MANGO': 22.99,
-  'CUNPW-CITRUS': 22.99,
-};
-
-// Pseudo-random generator seeded for consistency
-function seededRandom(seed) {
-  const x = Math.sin(seed) * 10000;
-  return x - Math.floor(x);
+// Utility: Format dates for Shopify query
+function formatShopifyDate(date) {
+  return format(date, "yyyy-MM-dd'T'HH:mm:ss");
 }
 
-// Generate daily sales for a SKU over a date range
-function generateDailySales(sku, startDate, endDate) {
-  const days = eachDayOfInterval({ start: startDate, end: endDate });
-  const velocity = monthlySalesVelocity[sku] || 100;
-  const dailyAvg = velocity / 30;
-  
-  return days.map((date, idx) => {
-    const seed = sku.charCodeAt(0) + date.getTime();
-    const variance = 0.6 + seededRandom(seed) * 0.8; // 60% to 140% of daily average
-    const units = Math.round(dailyAvg * variance);
-    const price = pricing[sku] || 12.99;
-    
-    return {
-      date: format(date, 'yyyy-MM-dd'),
-      units: Math.max(0, units),
-      grossSales: Math.max(0, units * price),
-      orders: Math.max(1, Math.round(units / 2.5)), // assume ~2.5 units per order
-    };
-  });
+// Utility: Get Shopify date range query
+function getShopifyDateQuery(startDate, endDate) {
+  return `created_at:>='${formatShopifyDate(startDate)}' AND created_at:<='${formatShopifyDate(endDate)}'`;
 }
 
-// Aggregate daily sales to weekly, monthly, quarterly
-function aggregateToWeekly(dailyData) {
-  const weekly = {};
-  dailyData.forEach(d => {
-    const date = new Date(d.date);
-    const weekStart = startOfWeek(date, { weekStartsOn: 1 });
-    const key = format(weekStart, 'yyyy-MM-dd');
-    
-    if (!weekly[key]) {
-      weekly[key] = { date: key, units: 0, grossSales: 0, orders: 0, days: 0 };
-    }
-    weekly[key].units += d.units;
-    weekly[key].grossSales += d.grossSales;
-    weekly[key].orders += d.orders;
-    weekly[key].days += 1;
-  });
-  
-  return Object.values(weekly);
-}
-
-function aggregateToMonthly(dailyData) {
-  const monthly = {};
-  dailyData.forEach(d => {
-    const date = new Date(d.date);
-    const monthStart = startOfMonth(date);
-    const key = format(monthStart, 'yyyy-MM-dd');
-    
-    if (!monthly[key]) {
-      monthly[key] = { date: key, units: 0, grossSales: 0, orders: 0, days: 0 };
-    }
-    monthly[key].units += d.units;
-    monthly[key].grossSales += d.grossSales;
-    monthly[key].orders += d.orders;
-    monthly[key].days += 1;
-  });
-  
-  return Object.values(monthly);
-}
-
-function aggregateToQuarterly(dailyData) {
-  const quarterly = {};
-  dailyData.forEach(d => {
-    const date = new Date(d.date);
-    const quarterStart = startOfYear(date);
-    const quarter = Math.floor(date.getMonth() / 3);
-    const key = format(new Date(quarterStart.getFullYear(), quarter * 3, 1), 'yyyy-MM-dd');
-    
-    if (!quarterly[key]) {
-      quarterly[key] = { date: key, units: 0, grossSales: 0, orders: 0, days: 0 };
-    }
-    quarterly[key].units += d.units;
-    quarterly[key].grossSales += d.grossSales;
-    quarterly[key].orders += d.orders;
-    quarterly[key].days += 1;
-  });
-  
-  return Object.values(quarterly);
-}
-
-// Get date range based on filter
 export function getDateRange(timeRange) {
-  const now = new Date();
-  const zonedNow = utcToZonedTime(now, TZ);
+  const now = startOfDay(utcToZonedTime(new Date(), TZ));
   
+  let start;
+  let label = '';
+
   switch (timeRange) {
     case 'daily':
-      return { start: subDays(zonedNow, 1), end: zonedNow, label: 'Last 24 Hours' };
+      start = subDays(now, 1);
+      label = 'Last 24 Hours';
+      break;
     case 'weekly':
-      return { start: subDays(zonedNow, 7), end: zonedNow, label: 'Last 7 Days' };
-    case 'mtd':
-      return { start: startOfMonth(zonedNow), end: zonedNow, label: 'Month to Date' };
-    case 'ytd':
-      return { start: startOfYear(zonedNow), end: zonedNow, label: 'Year to Date' };
+      start = subDays(now, 7);
+      label = 'Last 7 Days';
+      break;
+    case 'mtd': {
+      start = startOfDay(new Date(now.getFullYear(), now.getMonth(), 1));
+      label = 'Month to Date';
+      break;
+    }
+    case 'ytd': {
+      start = startOfDay(new Date(now.getFullYear(), 0, 1));
+      label = 'Year to Date';
+      break;
+    }
     case 'all':
     default:
-      return { start: subDays(zonedNow, 180), end: zonedNow, label: 'All Time (180 days)' };
+      start = subDays(now, 180);
+      label = 'All Time (180 days)';
+  }
+
+  return { start, end: now, label };
+}
+
+export function calculatePeriodComparison(current, previous) {
+  if (previous === 0) return current > 0 ? 100 : 0;
+  const change = ((current - previous) / previous) * 100;
+  return Math.round(change);
+}
+
+/**
+ * Fetch orders for a given date range
+ */
+export async function fetchOrdersByRange(timeRange) {
+  try {
+    const { start, end } = getDateRange(timeRange);
+    const { start: prevStart, end: prevEnd } = getDateRange('daily'); // For comparison
+    
+    // Adjust comparison period to be same length as current period
+    const daysDiff = Math.ceil((end - start) / (1000 * 60 * 60 * 24));
+    const comparisonStart = new Date(start.getTime() - daysDiff * 24 * 60 * 60 * 1000);
+
+    const currentQuery = getShopifyDateQuery(start, end);
+    const comparisonQuery = getShopifyDateQuery(comparisonStart, start);
+
+    // Fetch current period orders
+    const currentData = await shopifyClient.query(ORDERS_BY_DATE_RANGE_QUERY, {
+      first: 250,
+      after: null,
+      query: currentQuery,
+    });
+
+    const currentOrders = currentData?.orders?.edges?.length || 0;
+
+    // Fetch comparison period orders
+    const comparisonData = await shopifyClient.query(ORDERS_BY_DATE_RANGE_QUERY, {
+      first: 250,
+      after: null,
+      query: comparisonQuery,
+    });
+
+    const previousOrders = comparisonData?.orders?.edges?.length || 0;
+    const comparison = calculatePeriodComparison(currentOrders, previousOrders);
+
+    return {
+      orders: currentOrders,
+      comparison,
+      label: 'Total Orders',
+    };
+  } catch (error) {
+    console.error('Error fetching orders:', error);
+    // Return fallback structure
+    return { orders: 0, comparison: 0, label: 'Total Orders' };
   }
 }
 
-// Calculate period-over-period comparison
-export function calculatePeriodComparison(current, previous) {
-  const change = current - previous;
-  const pctChange = previous > 0 ? ((change / previous) * 100).toFixed(1) : 0;
-  const trend = change >= 0 ? 'up' : 'down';
-  
-  return {
-    change: Math.abs(change),
-    pctChange: Math.abs(pctChange),
-    trend,
-    raw: change,
-  };
-}
-
-// Main data fetch functions
-export async function fetchOrdersByRange(timeRange) {
-  const { start, end } = getDateRange(timeRange);
-  const previousRange = getDateRange(timeRange === 'all' ? 'all' : timeRange);
-  const previousStart = subDays(start, Math.ceil((end - start) / (1000 * 60 * 60 * 24)));
-  
-  let totalOrders = 0;
-  let previousOrders = 0;
-  
-  products.forEach(product => {
-    product.variants.forEach(variant => {
-      const sku = variant.sku;
-      const dailySales = generateDailySales(sku, start, end);
-      const previousSales = generateDailySales(sku, previousStart, start);
-      
-      totalOrders += dailySales.reduce((sum, d) => sum + d.orders, 0);
-      previousOrders += previousSales.reduce((sum, d) => sum + d.orders, 0);
-    });
-  });
-  
-  return {
-    current: totalOrders,
-    previous: previousOrders,
-    comparison: calculatePeriodComparison(totalOrders, previousOrders),
-  };
-}
-
+/**
+ * Fetch sales (revenue) for a given date range
+ */
 export async function fetchSalesByRange(timeRange) {
-  const { start, end } = getDateRange(timeRange);
-  const previousStart = subDays(start, Math.ceil((end - start) / (1000 * 60 * 60 * 24)));
-  
-  let totalSales = 0;
-  let previousSales = 0;
-  
-  products.forEach(product => {
-    product.variants.forEach(variant => {
-      const sku = variant.sku;
-      const dailySales = generateDailySales(sku, start, end);
-      const previousDailySales = generateDailySales(sku, previousStart, start);
-      
-      totalSales += dailySales.reduce((sum, d) => sum + d.grossSales, 0);
-      previousSales += previousDailySales.reduce((sum, d) => sum + d.grossSales, 0);
+  try {
+    const { start, end } = getDateRange(timeRange);
+    const daysDiff = Math.ceil((end - start) / (1000 * 60 * 60 * 24));
+    const comparisonStart = new Date(start.getTime() - daysDiff * 24 * 60 * 60 * 1000);
+
+    const currentQuery = getShopifyDateQuery(start, end);
+    const comparisonQuery = getShopifyDateQuery(comparisonStart, start);
+
+    // Fetch current period
+    const currentData = await shopifyClient.query(ORDERS_BY_DATE_RANGE_QUERY, {
+      first: 250,
+      after: null,
+      query: currentQuery,
     });
-  });
-  
-  return {
-    current: totalSales,
-    previous: previousSales,
-    comparison: calculatePeriodComparison(totalSales, previousSales),
-  };
+
+    const currentSales = (currentData?.orders?.edges || []).reduce((sum, edge) => {
+      const amount = parseFloat(edge.node.totalPriceSet?.shopMoney?.amount || 0);
+      return sum + amount;
+    }, 0);
+
+    // Fetch comparison period
+    const comparisonData = await shopifyClient.query(ORDERS_BY_DATE_RANGE_QUERY, {
+      first: 250,
+      after: null,
+      query: comparisonQuery,
+    });
+
+    const previousSales = (comparisonData?.orders?.edges || []).reduce((sum, edge) => {
+      const amount = parseFloat(edge.node.totalPriceSet?.shopMoney?.amount || 0);
+      return sum + amount;
+    }, 0);
+
+    const comparison = calculatePeriodComparison(currentSales, previousSales);
+
+    return {
+      sales: Math.round(currentSales * 100) / 100,
+      comparison,
+      label: 'Total Sales',
+    };
+  } catch (error) {
+    console.error('Error fetching sales:', error);
+    return { sales: 0, comparison: 0, label: 'Total Sales' };
+  }
 }
 
+/**
+ * Fetch top variants by sales volume
+ */
 export async function fetchTopVariantsByRange(timeRange) {
-  const { start, end } = getDateRange(timeRange);
-  
-  const variants = [];
-  
-  products.forEach(product => {
-    product.variants.forEach(variant => {
-      const sku = variant.sku;
-      const dailySales = generateDailySales(sku, start, end);
-      const units = dailySales.reduce((sum, d) => sum + d.units, 0);
-      const sales = dailySales.reduce((sum, d) => sum + d.grossSales, 0);
-      const orders = dailySales.reduce((sum, d) => sum + d.orders, 0);
-      
-      variants.push({
-        productId: product.productId,
-        productTitle: product.productTitle,
-        variantId: variant.variantId,
-        variantTitle: variant.variantTitle,
-        sku: variant.sku,
-        unitsSold: units,
-        grossSales: sales,
-        ordersCount: orders,
+  try {
+    const { start, end } = getDateRange(timeRange);
+    const query = getShopifyDateQuery(start, end);
+
+    const data = await shopifyClient.query(ORDERS_BY_DATE_RANGE_QUERY, {
+      first: 250,
+      after: null,
+      query,
+    });
+
+    const variantSales = {};
+
+    (data?.orders?.edges || []).forEach(edge => {
+      (edge.node.lineItems?.edges || []).forEach(lineItem => {
+        const variant = lineItem.node.variant;
+        const sku = variant?.sku || 'unknown';
+        const quantity = lineItem.node.quantity || 0;
+        const amount = parseFloat(lineItem.node.originalTotalSet?.shopMoney?.amount || 0);
+
+        if (!variantSales[sku]) {
+          variantSales[sku] = {
+            sku,
+            title: variant?.title || 'Unknown',
+            quantity: 0,
+            sales: 0,
+          };
+        }
+
+        variantSales[sku].quantity += quantity;
+        variantSales[sku].sales += amount;
       });
     });
-  });
-  
-  return variants.sort((a, b) => b.unitsSold - a.unitsSold);
+
+    // Sort by quantity and return top 10
+    return Object.values(variantSales)
+      .sort((a, b) => b.quantity - a.quantity)
+      .slice(0, 10);
+  } catch (error) {
+    console.error('Error fetching top variants:', error);
+    return [];
+  }
 }
 
+/**
+ * Fetch product time series data
+ */
 export async function fetchProductTimeSeries(sku, timeRange = 'all') {
-  const { start, end } = getDateRange(timeRange);
-  
-  const byDay = generateDailySales(sku, start, end);
-  const byWeek = aggregateToWeekly(byDay);
-  const byMonth = aggregateToMonthly(byDay);
-  const byQuarter = aggregateToQuarterly(byDay);
-  
-  const totals = {
-    units: byDay.reduce((sum, d) => sum + d.units, 0),
-    sales: byDay.reduce((sum, d) => sum + d.grossSales, 0),
-    orders: byDay.reduce((sum, d) => sum + d.orders, 0),
-  };
-  
-  return {
-    sku,
-    byDay,
-    byWeek,
-    byMonth,
-    byQuarter,
-    totals,
-  };
-}
+  try {
+    const { start, end } = getDateRange(timeRange);
+    const query = `${getShopifyDateQuery(start, end)} AND sku:${sku}`;
 
-export async function fetchInventoryLevels() {
-  return Object.entries(inventoryLevels).map(([sku, units]) => {
-    const monthlyVelocity = monthlySalesVelocity[sku] || 100;
-    const weeksOfCover = (units / monthlyVelocity) * 4; // Convert monthly to weekly
-    const projectedStockoutDate = new Date();
-    projectedStockoutDate.setDate(projectedStockoutDate.getDate() + (weeksOfCover * 7));
-    
-    // Find product and variant info
-    let productTitle = '';
-    let variantTitle = '';
-    let productId = '';
-    let variantId = '';
-    
-    products.forEach(product => {
-      product.variants.forEach(variant => {
-        if (variant.sku === sku) {
-          productTitle = product.productTitle;
-          variantTitle = variant.variantTitle;
-          productId = product.productId;
-          variantId = variant.variantId;
+    const data = await shopifyClient.query(ORDERS_BY_DATE_RANGE_QUERY, {
+      first: 250,
+      after: null,
+      query,
+    });
+
+    const timeSeries = {};
+
+    (data?.orders?.edges || []).forEach(edge => {
+      const orderDate = new Date(edge.node.createdAt);
+      const dateKey = format(orderDate, 'yyyy-MM-dd');
+
+      if (!timeSeries[dateKey]) {
+        timeSeries[dateKey] = { date: dateKey, units: 0, sales: 0, orders: 0 };
+      }
+
+      (edge.node.lineItems?.edges || []).forEach(lineItem => {
+        if (lineItem.node.variant?.sku === sku) {
+          timeSeries[dateKey].units += lineItem.node.quantity || 0;
+          timeSeries[dateKey].sales += parseFloat(lineItem.node.originalTotalSet?.shopMoney?.amount || 0);
+          timeSeries[dateKey].orders += 1;
         }
       });
     });
-    
-    return {
-      sku,
-      productId,
-      productTitle,
-      variantId,
-      variantTitle,
-      onHand: units,
-      monthlySalesVelocity,
-      weeksOfCover: parseFloat(weeksOfCover.toFixed(1)),
-      projectedStockoutDate: format(projectedStockoutDate, 'yyyy-MM-dd'),
-      lastUpdated: format(new Date(), 'yyyy-MM-dd HH:mm:ss'),
-    };
-  });
+
+    return Object.values(timeSeries).sort((a, b) => new Date(a.date) - new Date(b.date));
+  } catch (error) {
+    console.error('Error fetching product time series:', error);
+    return [];
+  }
 }
 
-// Mock inbound orders (for supply chain tracker)
+/**
+ * Fetch inventory levels for all product variants
+ */
+export async function fetchInventoryLevels() {
+  try {
+    const data = await shopifyClient.query(INVENTORY_LEVELS_QUERY, {
+      first: 250,
+      after: null,
+    });
+
+    // Process inventory data
+    const inventory = (data?.inventoryItems?.edges || []).map(edge => {
+      const item = edge.node;
+      const available = (item.inventoryLevels?.edges || [])[0]?.node?.available || 0;
+
+      return {
+        sku: item.sku,
+        onHand: available,
+        tracked: item.tracked,
+        lastUpdated: format(new Date(), 'yyyy-MM-dd HH:mm:ss'),
+      };
+    });
+
+    return inventory;
+  } catch (error) {
+    console.error('Error fetching inventory levels:', error);
+    return [];
+  }
+}
+
+/**
+ * Fetch inbound orders (stored in local state)
+ * This is not directly available from Shopify, so it's stored locally
+ */
 export async function fetchInboundOrders() {
-  return [
-    {
-      id: 'ord_sea_001',
-      sku: 'CUNW-100G',
-      orderSize: 50000,
-      freightType: 'sea',
-      deliveryDate: '2026-03-15',
-      depositTracking: { paid: 5000, remaining: 5000 },
-      notes: 'Container from Vietnam supplier',
-      estimatedArrival: '2026-03-15',
-      status: 'in-transit',
-    },
-    {
-      id: 'ord_air_001',
-      sku: 'CUNP-100G',
-      orderSize: 20000,
-      freightType: 'air',
-      deliveryDate: '2026-02-25',
-      depositTracking: { paid: 3000, remaining: 0 },
-      notes: 'High priority restock',
-      estimatedArrival: '2026-02-25',
-      status: 'shipped',
-    },
-  ];
+  try {
+    const stored = localStorage.getItem('inbound_orders');
+    return stored ? JSON.parse(stored) : [];
+  } catch (error) {
+    console.error('Error fetching inbound orders:', error);
+    return [];
+  }
+}
+
+/**
+ * Save inbound order to local storage
+ */
+export function addInboundOrder(order) {
+  try {
+    const orders = fetchInboundOrders();
+    orders.push({
+      ...order,
+      id: Date.now().toString(),
+      createdAt: new Date().toISOString(),
+    });
+    localStorage.setItem('inbound_orders', JSON.stringify(orders));
+    return true;
+  } catch (error) {
+    console.error('Error saving inbound order:', error);
+    return false;
+  }
+}
+
+/**
+ * Delete inbound order
+ */
+export function deleteInboundOrder(orderId) {
+  try {
+    const orders = fetchInboundOrders();
+    const filtered = orders.filter(o => o.id !== orderId);
+    localStorage.setItem('inbound_orders', JSON.stringify(filtered));
+    return true;
+  } catch (error) {
+    console.error('Error deleting inbound order:', error);
+    return false;
+  }
 }
 
 export default {
@@ -409,4 +334,6 @@ export default {
   fetchProductTimeSeries,
   fetchInventoryLevels,
   fetchInboundOrders,
+  addInboundOrder,
+  deleteInboundOrder,
 };
