@@ -221,6 +221,9 @@ export async function fetchOrdersByRange(timeRange) {
       first: 250,
       after: null,
       query: currentQuery,
+    }).catch(err => {
+      console.error('Error fetching current orders:', err);
+      return { orders: { edges: [] } };
     });
 
     const currentOrders = currentData?.orders?.edges?.length || 0;
@@ -230,10 +233,15 @@ export async function fetchOrdersByRange(timeRange) {
       first: 250,
       after: null,
       query: comparisonQuery,
+    }).catch(err => {
+      console.error('Error fetching comparison orders:', err);
+      return { orders: { edges: [] } };
     });
 
     const previousOrders = comparisonData?.orders?.edges?.length || 0;
     const comparison = calculatePeriodComparison(currentOrders, previousOrders);
+
+    console.log(`Orders - Current: ${currentOrders}, Previous: ${previousOrders}, Change: ${comparison}%`);
 
     return {
       orders: currentOrders,
@@ -263,6 +271,9 @@ export async function fetchSalesByRange(timeRange) {
       first: 250,
       after: null,
       query: currentQuery,
+    }).catch(err => {
+      console.error('Error fetching current sales:', err);
+      return { orders: { edges: [] } };
     });
 
     const currentSales = (currentData?.orders?.edges || []).reduce((sum, edge) => {
@@ -275,6 +286,9 @@ export async function fetchSalesByRange(timeRange) {
       first: 250,
       after: null,
       query: comparisonQuery,
+    }).catch(err => {
+      console.error('Error fetching comparison sales:', err);
+      return { orders: { edges: [] } };
     });
 
     const previousSales = (comparisonData?.orders?.edges || []).reduce((sum, edge) => {
@@ -283,6 +297,8 @@ export async function fetchSalesByRange(timeRange) {
     }, 0);
 
     const comparison = calculatePeriodComparison(currentSales, previousSales);
+
+    console.log(`Sales - Current: $${currentSales.toFixed(2)}, Previous: $${previousSales.toFixed(2)}, Change: ${comparison}%`);
 
     return {
       sales: Math.round(currentSales * 100) / 100,
