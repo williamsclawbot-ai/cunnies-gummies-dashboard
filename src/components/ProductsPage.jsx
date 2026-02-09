@@ -8,6 +8,7 @@ export default function ProductsPage() {
   const [expandedSku, setExpandedSku] = useState(null);
   const [skuData, setSkuData] = useState({});
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   // Mock SKU list
   const skus = [
@@ -27,16 +28,24 @@ export default function ProductsPage() {
   useEffect(() => {
     const loadData = async () => {
       setLoading(true);
+      setError(null);
       try {
         const data = {};
         await Promise.all(
           skus.map(async (item) => {
-            data[item.sku] = await fetchProductTimeSeries(item.sku, timeRange);
+            try {
+              const result = await fetchProductTimeSeries(item.sku, timeRange);
+              data[item.sku] = result || { sku: item.sku, byDay: [], byWeek: [], byMonth: [], byQuarter: [] };
+            } catch (err) {
+              console.error(`Error loading ${item.sku}:`, err);
+              data[item.sku] = { sku: item.sku, byDay: [], byWeek: [], byMonth: [], byQuarter: [] };
+            }
           })
         );
         setSkuData(data);
       } catch (error) {
         console.error('Error loading SKU data:', error);
+        setError(error.message || 'Failed to load product data');
       } finally {
         setLoading(false);
       }
@@ -71,6 +80,22 @@ export default function ProductsPage() {
 
   if (loading) {
     return <div style={{ textAlign: 'center', padding: '2rem' }}>Loading products...</div>;
+  }
+
+  if (error) {
+    return (
+      <div style={{ 
+        textAlign: 'center', 
+        padding: '2rem',
+        color: '#d32f2f',
+        backgroundColor: '#ffebee',
+        borderRadius: '4px',
+        margin: '1rem'
+      }}>
+        <h3>⚠️ Error Loading Products</h3>
+        <p>{error}</p>
+      </div>
+    );
   }
 
   return (
