@@ -1,19 +1,98 @@
 /**
- * Data Service - Shopify API Integration
- * Fetches real data from Shopify Admin API
+ * Data Service - Shopify API Integration via Serverless Proxy
+ * Fetches real data from Shopify through /api/shopify
  */
 
-import { shopifyClient, ORDERS_BY_DATE_RANGE_QUERY, PRODUCT_VARIANTS_QUERY, INVENTORY_LEVELS_QUERY } from './shopifyClient';
 import { 
   subDays, 
   startOfDay, 
   format,
-  isBefore,
-  isAfter,
+  startOfWeek,
+  startOfMonth,
+  startOfQuarter,
+  eachDayOfInterval,
+  eachWeekOfInterval,
+  eachMonthOfInterval,
 } from 'date-fns';
-import { utcToZonedTime, zonedTimeToUtc } from 'date-fns-tz';
+import { utcToZonedTime } from 'date-fns-tz';
 
 const TZ = 'Australia/Brisbane';
+
+// GraphQL Queries (same as shopifyClient)
+const ORDERS_BY_DATE_RANGE_QUERY = `
+  query GetOrdersByDateRange($first: Int!, $after: String, $query: String!) {
+    orders(first: $first, after: $after, sortKey: CREATED_AT, reverse: true, query: $query) {
+      edges {
+        node {
+          id
+          createdAt
+          totalPriceSet {
+            shopMoney {
+              amount
+            }
+          }
+          lineItems(first: 100) {
+            edges {
+              node {
+                quantity
+                variant {
+                  id
+                  sku
+                  title
+                  product {
+                    id
+                    title
+                  }
+                }
+                originalTotalSet {
+                  shopMoney {
+                    amount
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+      pageInfo {
+        hasNextPage
+        endCursor
+      }
+    }
+  }
+`;
+
+// API call helper
+async function callShopifyAPI(query, variables = {}) {
+  try {
+    const response = await fetch('/api/shopify', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        query,
+        variables,
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`API error: ${response.status}`);
+    }
+
+    const data = await response.json();
+
+    if (data.errors) {
+      console.error('GraphQL errors:', data.errors);
+      throw new Error(`GraphQL error: ${data.errors[0].message}`);
+    }
+
+    return data.data;
+  } catch (error) {
+    console.error('Shopify API request failed:', error);
+    throw error;
+  }
+}
 
 // Utility: Format dates for Shopify query
 function formatShopifyDate(date) {
@@ -23,6 +102,66 @@ function formatShopifyDate(date) {
 // Utility: Get Shopify date range query
 function getShopifyDateQuery(startDate, endDate) {
   return `created_at:>='${formatShopifyDate(startDate)}' AND created_at:<='${formatShopifyDate(endDate)}'`;
+}
+
+// Aggregate daily data into weekly buckets
+function aggregateToWeekly(dailyData) {
+  const weekly = {};
+  
+  dailyData.forEach(day => {
+    const date = new Date(day.date);
+    const weekStart = startOfWeek(date, { weekStartsOn: 1 }); // Monday
+    const weekKey = format(weekStart, 'yyyy-MM-dd');
+    
+    if (!weekly[weekKey]) {
+      weekly[weekKey] = { date: weekKey, units: 0, grossSales: 0, orders: 0 };
+    }
+    weekly[weekKey].units += day.units || 0;
+    weekly[weekKey].grossSales += day.sales || 0;
+    weekly[weekKey].orders += day.orders || 0;
+  });
+  
+  return Object.values(weekly).sort((a, b) => new Date(a.date) - new Date(b.date));
+}
+
+// Aggregate daily data into monthly buckets
+function aggregateToMonthly(dailyData) {
+  const monthly = {};
+  
+  dailyData.forEach(day => {
+    const date = new Date(day.date);
+    const monthStart = startOfMonth(date);
+    const monthKey = format(monthStart, 'yyyy-MM-dd');
+    
+    if (!monthly[monthKey]) {
+      monthly[monthKey] = { date: monthKey, units: 0, grossSales: 0, orders: 0 };
+    }
+    monthly[monthKey].units += day.units || 0;
+    monthly[monthKey].grossSales += day.sales || 0;
+    monthly[monthKey].orders += day.orders || 0;
+  });
+  
+  return Object.values(monthly).sort((a, b) => new Date(a.date) - new Date(b.date));
+}
+
+// Aggregate daily data into quarterly buckets
+function aggregateToQuarterly(dailyData) {
+  const quarterly = {};
+  
+  dailyData.forEach(day => {
+    const date = new Date(day.date);
+    const quarterStart = startOfQuarter(date);
+    const quarterKey = format(quarterStart, 'yyyy-MM-dd');
+    
+    if (!quarterly[quarterKey]) {
+      quarterly[quarterKey] = { date: quarterKey, units: 0, grossSales: 0, orders: 0 };
+    }
+    quarterly[quarterKey].units += day.units || 0;
+    quarterly[quarterKey].grossSales += day.sales || 0;
+    quarterly[quarterKey].orders += day.orders || 0;
+  });
+  
+  return Object.values(quarterly).sort((a, b) => new Date(a.date) - new Date(b.date));
 }
 
 export function getDateRange(timeRange) {
@@ -71,9 +210,6 @@ export function calculatePeriodComparison(current, previous) {
 export async function fetchOrdersByRange(timeRange) {
   try {
     const { start, end } = getDateRange(timeRange);
-    const { start: prevStart, end: prevEnd } = getDateRange('daily'); // For comparison
-    
-    // Adjust comparison period to be same length as current period
     const daysDiff = Math.ceil((end - start) / (1000 * 60 * 60 * 24));
     const comparisonStart = new Date(start.getTime() - daysDiff * 24 * 60 * 60 * 1000);
 
@@ -81,7 +217,7 @@ export async function fetchOrdersByRange(timeRange) {
     const comparisonQuery = getShopifyDateQuery(comparisonStart, start);
 
     // Fetch current period orders
-    const currentData = await shopifyClient.query(ORDERS_BY_DATE_RANGE_QUERY, {
+    const currentData = await callShopifyAPI(ORDERS_BY_DATE_RANGE_QUERY, {
       first: 250,
       after: null,
       query: currentQuery,
@@ -90,7 +226,7 @@ export async function fetchOrdersByRange(timeRange) {
     const currentOrders = currentData?.orders?.edges?.length || 0;
 
     // Fetch comparison period orders
-    const comparisonData = await shopifyClient.query(ORDERS_BY_DATE_RANGE_QUERY, {
+    const comparisonData = await callShopifyAPI(ORDERS_BY_DATE_RANGE_QUERY, {
       first: 250,
       after: null,
       query: comparisonQuery,
@@ -106,7 +242,6 @@ export async function fetchOrdersByRange(timeRange) {
     };
   } catch (error) {
     console.error('Error fetching orders:', error);
-    // Return fallback structure
     return { orders: 0, comparison: 0, label: 'Total Orders' };
   }
 }
@@ -124,7 +259,7 @@ export async function fetchSalesByRange(timeRange) {
     const comparisonQuery = getShopifyDateQuery(comparisonStart, start);
 
     // Fetch current period
-    const currentData = await shopifyClient.query(ORDERS_BY_DATE_RANGE_QUERY, {
+    const currentData = await callShopifyAPI(ORDERS_BY_DATE_RANGE_QUERY, {
       first: 250,
       after: null,
       query: currentQuery,
@@ -136,7 +271,7 @@ export async function fetchSalesByRange(timeRange) {
     }, 0);
 
     // Fetch comparison period
-    const comparisonData = await shopifyClient.query(ORDERS_BY_DATE_RANGE_QUERY, {
+    const comparisonData = await callShopifyAPI(ORDERS_BY_DATE_RANGE_QUERY, {
       first: 250,
       after: null,
       query: comparisonQuery,
@@ -168,7 +303,7 @@ export async function fetchTopVariantsByRange(timeRange) {
     const { start, end } = getDateRange(timeRange);
     const query = getShopifyDateQuery(start, end);
 
-    const data = await shopifyClient.query(ORDERS_BY_DATE_RANGE_QUERY, {
+    const data = await callShopifyAPI(ORDERS_BY_DATE_RANGE_QUERY, {
       first: 250,
       after: null,
       query,
@@ -208,14 +343,14 @@ export async function fetchTopVariantsByRange(timeRange) {
 }
 
 /**
- * Fetch product time series data
+ * Fetch product time series data (with aggregations)
  */
 export async function fetchProductTimeSeries(sku, timeRange = 'all') {
   try {
     const { start, end } = getDateRange(timeRange);
     const query = `${getShopifyDateQuery(start, end)} AND sku:${sku}`;
 
-    const data = await shopifyClient.query(ORDERS_BY_DATE_RANGE_QUERY, {
+    const data = await callShopifyAPI(ORDERS_BY_DATE_RANGE_QUERY, {
       first: 250,
       after: null,
       query,
@@ -240,10 +375,21 @@ export async function fetchProductTimeSeries(sku, timeRange = 'all') {
       });
     });
 
-    return Object.values(timeSeries).sort((a, b) => new Date(a.date) - new Date(b.date));
+    const byDay = Object.values(timeSeries).sort((a, b) => new Date(a.date) - new Date(b.date));
+    const byWeek = aggregateToWeekly(byDay);
+    const byMonth = aggregateToMonthly(byDay);
+    const byQuarter = aggregateToQuarterly(byDay);
+
+    return {
+      sku,
+      byDay,
+      byWeek,
+      byMonth,
+      byQuarter,
+    };
   } catch (error) {
     console.error('Error fetching product time series:', error);
-    return [];
+    return { sku, byDay: [], byWeek: [], byMonth: [], byQuarter: [] };
   }
 }
 
@@ -252,12 +398,34 @@ export async function fetchProductTimeSeries(sku, timeRange = 'all') {
  */
 export async function fetchInventoryLevels() {
   try {
-    const data = await shopifyClient.query(INVENTORY_LEVELS_QUERY, {
-      first: 250,
-      after: null,
-    });
+    const INVENTORY_QUERY = `
+      query {
+        inventoryItems(first: 250) {
+          edges {
+            node {
+              id
+              sku
+              tracked
+              inventoryLevels(first: 10) {
+                edges {
+                  node {
+                    id
+                    available
+                    location {
+                      id
+                      name
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    `;
 
-    // Process inventory data
+    const data = await callShopifyAPI(INVENTORY_QUERY);
+
     const inventory = (data?.inventoryItems?.edges || []).map(edge => {
       const item = edge.node;
       const available = (item.inventoryLevels?.edges || [])[0]?.node?.available || 0;
@@ -279,7 +447,6 @@ export async function fetchInventoryLevels() {
 
 /**
  * Fetch inbound orders (stored in local state)
- * This is not directly available from Shopify, so it's stored locally
  */
 export async function fetchInboundOrders() {
   try {
