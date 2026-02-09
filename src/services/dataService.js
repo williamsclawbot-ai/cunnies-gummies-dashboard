@@ -490,6 +490,43 @@ export function deleteInboundOrder(orderId) {
   }
 }
 
+/**
+ * Fetch all product variants (SKUs) from Shopify
+ */
+export async function fetchAllProductVariants() {
+  try {
+    const VARIANTS_QUERY = `
+      query {
+        productVariants(first: 250) {
+          edges {
+            node {
+              id
+              sku
+              title
+              product {
+                id
+                title
+              }
+            }
+          }
+        }
+      }
+    `;
+
+    const data = await callShopifyAPI(VARIANTS_QUERY);
+    
+    return (data?.productVariants?.edges || []).map(edge => ({
+      variantId: edge.node.id,
+      sku: edge.node.sku,
+      variantTitle: edge.node.title,
+      productTitle: edge.node.product?.title || 'Unknown',
+    }));
+  } catch (error) {
+    console.error('Error fetching product variants:', error);
+    return [];
+  }
+}
+
 export default {
   getDateRange,
   calculatePeriodComparison,
@@ -501,4 +538,5 @@ export default {
   fetchInboundOrders,
   addInboundOrder,
   deleteInboundOrder,
+  fetchAllProductVariants,
 };

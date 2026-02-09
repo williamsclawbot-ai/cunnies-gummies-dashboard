@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts';
 import TimeRangeSelector from './TimeRangeSelector';
-import { fetchProductTimeSeries } from '../services/dataService';
+import { fetchProductTimeSeries, fetchAllProductVariants } from '../services/dataService';
 
 export default function ProductsPage() {
   const [timeRange, setTimeRange] = useState('all');
@@ -9,23 +9,26 @@ export default function ProductsPage() {
   const [skuData, setSkuData] = useState({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [skus, setSkus] = useState([]);
 
-  // Mock SKU list
-  const skus = [
-    { sku: 'CUNW-100G', product: 'Sour Watermelon', variant: '100g Pack' },
-    { sku: 'CUNW-500G', product: 'Sour Watermelon', variant: '500g Pack' },
-    { sku: 'CUNP-100G', product: 'Sour Peach', variant: '100g Pack' },
-    { sku: 'CUNP-500G', product: 'Sour Peach', variant: '500g Pack' },
-    { sku: 'CUNS-100G', product: 'Strawberry', variant: '100g Pack' },
-    { sku: 'CUNS-500G', product: 'Strawberry', variant: '500g Pack' },
-    { sku: 'CUNA-100G', product: 'Green Apple', variant: '100g Pack' },
-    { sku: 'CUNA-500G', product: 'Green Apple', variant: '500g Pack' },
-    { sku: 'CUNPW-BLUE', product: 'Pre-Workout', variant: 'Blue Razz' },
-    { sku: 'CUNPW-MANGO', product: 'Pre-Workout', variant: 'Mango Madness' },
-    { sku: 'CUNPW-CITRUS', product: 'Pre-Workout', variant: 'Citrus Surge' },
-  ];
-
+  // Load SKU list on mount
   useEffect(() => {
+    const loadSkus = async () => {
+      try {
+        const variants = await fetchAllProductVariants();
+        setSkus(variants);
+      } catch (error) {
+        console.error('Error loading SKUs:', error);
+        setError('Failed to load product list');
+      }
+    };
+    loadSkus();
+  }, []);
+
+  // Load data for each SKU when timeRange changes
+  useEffect(() => {
+    if (skus.length === 0) return;
+
     const loadData = async () => {
       setLoading(true);
       setError(null);
@@ -52,7 +55,7 @@ export default function ProductsPage() {
     };
 
     loadData();
-  }, [timeRange]);
+  }, [timeRange, skus]);
 
   const formatCurrency = (val) => {
     if (val >= 1000000) return `$${(val / 1000000).toFixed(2)}M`;
