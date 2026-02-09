@@ -65,8 +65,8 @@ export default function ProductsPage() {
     if (!series) return;
 
     let csv = 'Date,Units Sold,Gross Sales,Orders\n';
-    series.byDay.forEach(d => {
-      csv += `${d.date},${d.units},${d.grossSales.toFixed(2)},${d.orders}\n`;
+    (series.byDay || []).forEach(d => {
+      csv += `${d.date},${d.units || 0},${(d.sales || 0).toFixed(2)},${d.orders || 0}\n`;
     });
 
     const element = document.createElement('a');
@@ -136,13 +136,13 @@ export default function ProductsPage() {
                     </td>
                     <td style={{ fontFamily: 'monospace' }}>{item.sku}</td>
                     <td style={{ textAlign: 'right', fontWeight: '500' }}>
-                      {data ? data.totals.units.toLocaleString() : '-'}
+                      {data ? (data?.totals?.units || 0).toLocaleString() : '-'}
                     </td>
                     <td style={{ textAlign: 'right', fontWeight: '500', color: '#667eea' }}>
-                      {data ? formatCurrency(data.totals.sales) : '-'}
+                      {data ? formatCurrency((data?.totals?.sales || 0)) : '-'}
                     </td>
                     <td style={{ textAlign: 'right' }}>
-                      {data ? (data.totals.units / data.byDay.length).toFixed(0) : '-'}
+                      {data ? ((data?.totals?.units || 0) / data.byDay.length).toFixed(0) : '-'}
                     </td>
                     <td style={{ textAlign: 'center' }}>{trend}</td>
                     <td style={{ textAlign: 'center' }}>
@@ -165,20 +165,20 @@ export default function ProductsPage() {
                           <div className="detail-summary">
                             <div className="summary-item">
                               <span className="summary-label">Total Units</span>
-                              <span className="summary-value">{data.totals.units.toLocaleString()}</span>
+                              <span className="summary-value">{(data?.totals?.units || 0).toLocaleString()}</span>
                             </div>
                             <div className="summary-item">
                               <span className="summary-label">Total Sales</span>
-                              <span className="summary-value">{formatCurrency(data.totals.sales)}</span>
+                              <span className="summary-value">{formatCurrency((data?.totals?.sales || 0))}</span>
                             </div>
                             <div className="summary-item">
                               <span className="summary-label">Total Orders</span>
-                              <span className="summary-value">{data.totals.orders.toLocaleString()}</span>
+                              <span className="summary-value">{(data?.totals?.orders || 0).toLocaleString()}</span>
                             </div>
                             <div className="summary-item">
                               <span className="summary-label">Avg per Order</span>
                               <span className="summary-value">
-                                {(data.totals.units / data.totals.orders).toFixed(1)} units
+                                {((data?.totals?.units || 0) / (data?.totals?.orders || 0)).toFixed(1)} units
                               </span>
                             </div>
                           </div>
@@ -271,7 +271,7 @@ export default function ProductsPage() {
             return (
               <div key={item.sku} className="summary-card-mini">
                 <div className="mini-card-header">{item.sku}</div>
-                <div className="mini-card-stat">{data ? (data.totals.units / 1000).toFixed(1) : '-'}K units</div>
+                <div className="mini-card-stat">{data ? ((data?.totals?.units || 0) / 1000).toFixed(1) : '-'}K units</div>
               </div>
             );
           })}
