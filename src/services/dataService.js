@@ -322,18 +322,27 @@ export async function fetchTopVariantsByRange(timeRange) {
           variantSales[sku] = {
             sku,
             title: variant?.title || 'Unknown',
+            variantTitle: variant?.title || 'Unknown',
+            productTitle: variant?.product?.title || 'Unknown Product',
             quantity: 0,
             sales: 0,
+            ordersCount: 0,
           };
         }
 
         variantSales[sku].quantity += quantity;
         variantSales[sku].sales += amount;
+        variantSales[sku].ordersCount += 1;
       });
     });
 
     // Sort by quantity and return top 10
     return Object.values(variantSales)
+      .map(v => ({
+        ...v,
+        unitsSold: v.quantity,  // Alias for component compatibility
+        grossSales: v.sales,     // Alias for component compatibility
+      }))
       .sort((a, b) => b.quantity - a.quantity)
       .slice(0, 10);
   } catch (error) {

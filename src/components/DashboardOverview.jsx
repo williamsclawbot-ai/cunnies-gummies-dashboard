@@ -104,6 +104,9 @@ export default function DashboardOverview() {
     );
   }
 
+  // Safely access topVariants
+  const topVariantData = topVariants && topVariants.length > 0 ? topVariants[0] : null;
+
   return (
     <div className="dashboard-overview">
       {/* Time Range Selector */}
@@ -147,24 +150,24 @@ export default function DashboardOverview() {
           <div className="kpi-header">
             <span className="kpi-title">Top Product Variant</span>
           </div>
-          {topVariants && topVariants.length > 0 && (
+          {topVariantData && (
             <div className="top-variant">
               <div className="variant-name">
-                {topVariants[0].productTitle} - {topVariants[0].variantTitle}
+                {topVariantData.productTitle} - {topVariantData.variantTitle}
               </div>
-              <div className="variant-sku">SKU: {topVariants[0].sku}</div>
+              <div className="variant-sku">SKU: {topVariantData.sku}</div>
               <div className="variant-stats">
                 <div className="stat">
                   <span className="stat-label">Units Sold</span>
-                  <span className="stat-value">{topVariants[0].unitsSold.toLocaleString()}</span>
+                  <span className="stat-value">{(topVariantData.unitsSold || 0).toLocaleString()}</span>
                 </div>
                 <div className="stat">
                   <span className="stat-label">Sales</span>
-                  <span className="stat-value">{formatCurrency(topVariants[0].grossSales)}</span>
+                  <span className="stat-value">{formatCurrency(topVariantData.grossSales || 0)}</span>
                 </div>
                 <div className="stat">
                   <span className="stat-label">Orders</span>
-                  <span className="stat-value">{topVariants[0].ordersCount.toLocaleString()}</span>
+                  <span className="stat-value">{(topVariantData.ordersCount || 0).toLocaleString()}</span>
                 </div>
               </div>
             </div>
@@ -224,20 +227,20 @@ export default function DashboardOverview() {
           </thead>
           <tbody>
             {topVariants?.slice(0, 10).map((v, idx) => (
-              <tr key={v.variantId}>
+              <tr key={v.sku || idx}>
                 <td style={{ fontWeight: 'bold', color: '#667eea' }}>{idx + 1}</td>
                 <td>
-                  <div style={{ fontWeight: '600' }}>{v.productTitle}</div>
-                  <div style={{ fontSize: '0.85rem', color: '#999' }}>{v.variantTitle}</div>
+                  <div style={{ fontWeight: '600' }}>{v.productTitle || 'N/A'}</div>
+                  <div style={{ fontSize: '0.85rem', color: '#999' }}>{v.variantTitle || v.title || 'N/A'}</div>
                 </td>
                 <td style={{ fontFamily: 'monospace', fontSize: '0.9rem' }}>{v.sku}</td>
                 <td style={{ textAlign: 'right', fontWeight: '500' }}>
-                  {v.unitsSold.toLocaleString()}
+                  {(v.unitsSold || v.quantity || 0).toLocaleString()}
                 </td>
                 <td style={{ textAlign: 'right', fontWeight: '500', color: '#667eea' }}>
-                  {formatCurrency(v.grossSales)}
+                  {formatCurrency(v.grossSales || v.sales || 0)}
                 </td>
-                <td style={{ textAlign: 'right' }}>{v.ordersCount.toLocaleString()}</td>
+                <td style={{ textAlign: 'right' }}>{(v.ordersCount || 0).toLocaleString()}</td>
               </tr>
             ))}
           </tbody>
