@@ -6,8 +6,9 @@
  * This function makes the actual GraphQL request with the access token
  */
 
-const SHOPIFY_STORE = process.env.VITE_SHOPIFY_STORE || 'eyhp3z-x1';
-const SHOPIFY_ACCESS_TOKEN = process.env.VITE_SHOPIFY_ACCESS_TOKEN;
+// Use non-VITE_ versions for serverless function
+const SHOPIFY_STORE = process.env.SHOPIFY_STORE || process.env.VITE_SHOPIFY_STORE || 'eyhp3z-x1';
+const SHOPIFY_ACCESS_TOKEN = process.env.SHOPIFY_ACCESS_TOKEN || process.env.VITE_SHOPIFY_ACCESS_TOKEN;
 const API_VERSION = '2024-10';
 
 const SHOPIFY_ENDPOINT = `https://${SHOPIFY_STORE}.myshopify.com/admin/api/${API_VERSION}/graphql.json`;
