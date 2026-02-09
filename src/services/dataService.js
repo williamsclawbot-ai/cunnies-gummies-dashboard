@@ -244,8 +244,13 @@ export async function fetchOrdersByRange(timeRange) {
     console.log(`Orders - Current: ${currentOrders}, Previous: ${previousOrders}, Change: ${comparison}%`);
 
     return {
-      orders: currentOrders,
-      comparison,
+      current: currentOrders,
+      previous: previousOrders,
+      comparison: {
+        trend: comparison >= 0 ? 'up' : 'down',
+        pctChange: comparison,
+        raw: comparison,
+      },
       label: 'Total Orders',
     };
   } catch (error) {
@@ -301,8 +306,13 @@ export async function fetchSalesByRange(timeRange) {
     console.log(`Sales - Current: $${currentSales.toFixed(2)}, Previous: $${previousSales.toFixed(2)}, Change: ${comparison}%`);
 
     return {
-      sales: Math.round(currentSales * 100) / 100,
-      comparison,
+      current: Math.round(currentSales * 100) / 100,
+      previous: Math.round(previousSales * 100) / 100,
+      comparison: {
+        trend: comparison >= 0 ? 'up' : 'down',
+        pctChange: comparison,
+        raw: comparison,
+      },
       label: 'Total Sales',
     };
   } catch (error) {
