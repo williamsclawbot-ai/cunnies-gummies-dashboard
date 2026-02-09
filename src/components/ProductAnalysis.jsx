@@ -52,6 +52,24 @@ export default function ProductAnalysis({ products, monthlyData }) {
             Jan 2026
           </button>
           <button 
+            className={`period-button ${selectedMonth === '2025-12' ? 'active' : ''}`}
+            onClick={() => setSelectedMonth('2025-12')}
+          >
+            Dec 2025
+          </button>
+          <button 
+            className={`period-button ${selectedMonth === '2025-11' ? 'active' : ''}`}
+            onClick={() => setSelectedMonth('2025-11')}
+          >
+            Nov 2025
+          </button>
+          <button 
+            className={`period-button ${selectedMonth === '2025-10' ? 'active' : ''}`}
+            onClick={() => setSelectedMonth('2025-10')}
+          >
+            Oct 2025
+          </button>
+          <button 
             className={`period-button ${selectedMonth === 'all' ? 'active' : ''}`}
             onClick={() => setSelectedMonth('all')}
           >
