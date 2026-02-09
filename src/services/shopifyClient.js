@@ -1,28 +1,19 @@
 /**
  * Shopify GraphQL Admin API Client
- * Handles all API requests to Shopify
+ * Routes through Vercel serverless proxy for security + CORS
  */
-
-const SHOPIFY_STORE = import.meta.env.VITE_SHOPIFY_STORE || 'eyhp3z-x1';
-const SHOPIFY_ACCESS_TOKEN = import.meta.env.VITE_SHOPIFY_ACCESS_TOKEN;
-const API_VERSION = '2024-10';
-
-const SHOPIFY_ENDPOINT = `https://${SHOPIFY_STORE}.myshopify.com/admin/api/${API_VERSION}/graphql.json`;
 
 class ShopifyClient {
   constructor() {
-    if (!SHOPIFY_ACCESS_TOKEN) {
-      console.error('Missing VITE_SHOPIFY_ACCESS_TOKEN environment variable');
-    }
+    // No token needed on frontend - it's handled by /api/shopify
   }
 
   async query(query, variables = {}) {
     try {
-      const response = await fetch(SHOPIFY_ENDPOINT, {
+      const response = await fetch('/api/shopify', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'X-Shopify-Access-Token': SHOPIFY_ACCESS_TOKEN,
         },
         body: JSON.stringify({
           query,
@@ -31,7 +22,7 @@ class ShopifyClient {
       });
 
       if (!response.ok) {
-        throw new Error(`Shopify API error: ${response.status}`);
+        throw new Error(`API error: ${response.status}`);
       }
 
       const data = await response.json();
