@@ -1,12 +1,28 @@
 import React, { useState, useMemo } from 'react';
-import { filterMonthlyData, calculateMetrics, getPeriodLabel } from '../utils/dateFilters';
+import { filterByMonth, calculateMetrics, getPeriodLabel, getMonthDateRange, getPreviousMonthRange } from '../utils/dateFilters';
 import { SalesChart } from './SalesChart';
 
 export default function SummaryCards({ data }) {
-  const [period, setPeriod] = useState('all');
+  const [selectedMonth, setSelectedMonth] = useState('all');
+
+  // Generate available months from data
+  const availableMonths = useMemo(() => {
+    if (!data.monthly_trends || data.monthly_trends.length === 0) {
+      return [];
+    }
+    
+    const months = data.monthly_trends.map(trend => {
+      const date = new Date(trend.month || trend.date);
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      return `${year}-${month}`;
+    }).filter((v, i, a) => a.indexOf(v) === i).sort().reverse();
+    
+    return months;
+  }, [data.monthly_trends]);
 
   const filteredMetrics = useMemo(() => {
-    if (period === 'all') {
+    if (selectedMonth === 'all') {
       return {
         total_orders: data.summary.total_orders_all_time,
         total_revenue: data.summary.total_revenue_all_time,
@@ -15,13 +31,13 @@ export default function SummaryCards({ data }) {
       };
     }
 
-    const filtered = filterMonthlyData(data.monthly_trends, period);
+    const filtered = filterByMonth(data.monthly_trends, selectedMonth);
     const metrics = calculateMetrics(filtered);
     return {
       ...metrics,
-      label: getPeriodLabel(period)
+      label: getPeriodLabel(selectedMonth)
     };
-  }, [period, data]);
+  }, [selectedMonth, data]);
 
   const cards = [
     {
@@ -56,37 +72,19 @@ export default function SummaryCards({ data }) {
     <div className="summary-section">
       <div className="summary-header">
         <h2>📊 Overview</h2>
-        <div className="time-range-selector">
-          <button 
-            className={`selector-btn ${period === 'daily' ? 'active' : ''}`}
-            onClick={() => setPeriod('daily')}
+        <div className="month-selector">
+          <select 
+            value={selectedMonth}
+            onChange={(e) => setSelectedMonth(e.target.value)}
+            className="month-dropdown"
           >
-            Daily
-          </button>
-          <button 
-            className={`selector-btn ${period === 'weekly' ? 'active' : ''}`}
-            onClick={() => setPeriod('weekly')}
-          >
-            Weekly
-          </button>
-          <button 
-            className={`selector-btn ${period === 'mtd' ? 'active' : ''}`}
-            onClick={() => setPeriod('mtd')}
-          >
-            MTD
-          </button>
-          <button 
-            className={`selector-btn ${period === 'ytd' ? 'active' : ''}`}
-            onClick={() => setPeriod('ytd')}
-          >
-            YTD
-          </button>
-          <button 
-            className={`selector-btn ${period === 'all' ? 'active' : ''}`}
-            onClick={() => setPeriod('all')}
-          >
-            All Time
-          </button>
+            <option value="all">All Time (YTD/all data)</option>
+            {availableMonths.map(month => (
+              <option key={month} value={month}>
+                {getPeriodLabel(month)}
+              </option>
+            ))}
+          </select>
         </div>
       </div>
 
@@ -105,7 +103,7 @@ export default function SummaryCards({ data }) {
 
       <div className="chart-section" style={{ marginTop: '2rem' }}>
         <h3>Sales Trend</h3>
-        <SalesChart data={data.monthly_trends} period={period} />
+        <SalesChart data={data.monthly_trends} period={selectedMonth} />
       </div>
     </div>
   );

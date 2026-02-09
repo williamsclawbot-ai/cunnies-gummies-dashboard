@@ -1306,7 +1306,7 @@ body {
   }
 }
 
-/* Time Range Selector */
+/* Time Range Selector (deprecated, kept for backwards compatibility) */
 .time-range-selector {
   display: flex;
   gap: 0.5rem;
@@ -1333,6 +1333,37 @@ body {
   background: #667eea;
   color: white;
   border-color: #667eea;
+}
+
+/* Month Selector Dropdown */
+.month-selector {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.month-dropdown {
+  padding: 0.6rem 1rem;
+  border: 1px solid #ddd;
+  background: white;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: all 0.2s ease;
+  color: #333;
+  font-weight: 500;
+  min-width: 200px;
+}
+
+.month-dropdown:hover {
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.month-dropdown:focus {
+  outline: none;
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
 }
 
 /* Summary Section Header */

@@ -1,14 +1,30 @@
 import React, { useState, useMemo } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import { filterProductData, getPeriodLabel } from '../utils/dateFilters';
+import { filterProductData, getPeriodLabel, filterByMonth } from '../utils/dateFilters';
 
 export default function ProductAnalysis({ products, monthlyData }) {
-  const [period, setPeriod] = useState('all');
+  const [selectedMonth, setSelectedMonth] = useState('all');
+
+  // Generate available months from data
+  const availableMonths = useMemo(() => {
+    if (!monthlyData || monthlyData.length === 0) {
+      return [];
+    }
+    
+    const months = monthlyData.map(trend => {
+      const date = new Date(trend.month || trend.date);
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      return `${year}-${month}`;
+    }).filter((v, i, a) => a.indexOf(v) === i).sort().reverse();
+    
+    return months;
+  }, [monthlyData]);
 
   const filteredProducts = useMemo(() => {
-    if (period === 'all') return products;
-    return filterProductData(products, monthlyData, period);
-  }, [products, monthlyData, period]);
+    if (selectedMonth === 'all') return products;
+    return filterProductData(products, monthlyData, selectedMonth);
+  }, [products, monthlyData, selectedMonth]);
 
   const chartData = filteredProducts.map(p => ({
     name: p.name.split(' ').slice(0, 2).join(' '),
@@ -22,37 +38,19 @@ export default function ProductAnalysis({ products, monthlyData }) {
     <div className="product-analysis-section">
       <div className="section-header">
         <h2>🏆 Product Performance</h2>
-        <div className="time-range-selector">
-          <button 
-            className={`selector-btn ${period === 'daily' ? 'active' : ''}`}
-            onClick={() => setPeriod('daily')}
+        <div className="month-selector">
+          <select 
+            value={selectedMonth}
+            onChange={(e) => setSelectedMonth(e.target.value)}
+            className="month-dropdown"
           >
-            Daily
-          </button>
-          <button 
-            className={`selector-btn ${period === 'weekly' ? 'active' : ''}`}
-            onClick={() => setPeriod('weekly')}
-          >
-            Weekly
-          </button>
-          <button 
-            className={`selector-btn ${period === 'mtd' ? 'active' : ''}`}
-            onClick={() => setPeriod('mtd')}
-          >
-            MTD
-          </button>
-          <button 
-            className={`selector-btn ${period === 'ytd' ? 'active' : ''}`}
-            onClick={() => setPeriod('ytd')}
-          >
-            YTD
-          </button>
-          <button 
-            className={`selector-btn ${period === 'all' ? 'active' : ''}`}
-            onClick={() => setPeriod('all')}
-          >
-            All Time
-          </button>
+            <option value="all">All Time (YTD/all data)</option>
+            {availableMonths.map(month => (
+              <option key={month} value={month}>
+                {getPeriodLabel(month)}
+              </option>
+            ))}
+          </select>
         </div>
       </div>
 
@@ -86,7 +84,7 @@ export default function ProductAnalysis({ products, monthlyData }) {
 
         <div className="product-list">
           <div className="period-info">
-            Showing data for: <strong>{getPeriodLabel(period)}</strong>
+            Showing data for: <strong>{getPeriodLabel(selectedMonth)}</strong>
           </div>
           {filteredProducts.map((p, i) => {
             const pct = totalUnits > 0 ? (p.units_sold / totalUnits * 100).toFixed(1) : 0;
