@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import {
   LineChart,
   Line,
@@ -11,18 +11,22 @@ import {
   Legend,
   ResponsiveContainer
 } from 'recharts';
+import { filterMonthlyData } from '../utils/dateFilters';
 
-export default function SalesChart({ data }) {
-  // Filter and transform data for active months only
-  const chartData = data
-    .filter(m => m.orders > 0)
-    .map(m => ({
-      month: new Date(m.month).toLocaleDateString('en-AU', { month: 'short', year: '2-digit' }),
-      orders: m.orders,
-      revenue: Math.round(m.orders * m.aov),
-      aov: Math.round(m.aov * 100) / 100,
-      date: m.month
-    }));
+function SalesChart({ data, period = 'all' }) {
+  const chartData = useMemo(() => {
+    const filtered = period === 'all' ? data : filterMonthlyData(data, period);
+    
+    return filtered
+      .filter(m => m.orders > 0)
+      .map(m => ({
+        month: new Date(m.month).toLocaleDateString('en-AU', { month: 'short', year: '2-digit' }),
+        orders: m.orders,
+        revenue: Math.round(m.orders * m.aov),
+        aov: Math.round(m.aov * 100) / 100,
+        date: m.month
+      }));
+  }, [data, period]);
 
   return (
     <div className="chart-container">
@@ -75,3 +79,6 @@ export default function SalesChart({ data }) {
     </div>
   );
 }
+
+export default SalesChart;
+export { SalesChart };

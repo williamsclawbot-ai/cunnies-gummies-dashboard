@@ -1305,3 +1305,279 @@ body {
     transform: rotate(90deg);
   }
 }
+
+/* Time Range Selector */
+.time-range-selector {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.selector-btn {
+  padding: 0.5rem 1rem;
+  border: 1px solid #ddd;
+  background: white;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.selector-btn:hover {
+  border-color: #667eea;
+  color: #667eea;
+}
+
+.selector-btn.active {
+  background: #667eea;
+  color: white;
+  border-color: #667eea;
+}
+
+/* Summary Section Header */
+.summary-section,
+.product-analysis-section {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.summary-header,
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.summary-header h2,
+.section-header h2 {
+  margin: 0;
+  font-size: 1.5rem;
+}
+
+.chart-section {
+  background: white;
+  border-radius: 8px;
+  padding: 1.5rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  border: 1px solid #e0e0e0;
+}
+
+.chart-section h3 {
+  margin-bottom: 1rem;
+  font-size: 1.1rem;
+}
+
+/* Product Analysis */
+.product-analysis {
+  background: white;
+  border-radius: 8px;
+  padding: 1.5rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  border: 1px solid #e0e0e0;
+}
+
+.period-info {
+  padding: 1rem;
+  background: #f0f4ff;
+  border-left: 4px solid #667eea;
+  margin-bottom: 1rem;
+  border-radius: 4px;
+  font-size: 0.95rem;
+}
+
+/* Supply Chain Tracker */
+.supply-chain-tracker {
+  background: white;
+  border-radius: 8px;
+  padding: 1.5rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  border: 1px solid #e0e0e0;
+}
+
+.tracker-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.tracker-header h2 {
+  margin: 0;
+}
+
+.header-subtext {
+  margin-top: 0.5rem;
+  color: #666;
+  font-size: 0.95rem;
+}
+
+/* Supply Chain Table */
+.supply-chain-table-wrapper {
+  overflow-x: auto;
+  margin-bottom: 2rem;
+}
+
+.supply-chain-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.supply-chain-table thead {
+  background: #f8f9fa;
+  border-bottom: 2px solid #ddd;
+}
+
+.supply-chain-table th {
+  padding: 1rem;
+  text-align: left;
+  font-weight: 600;
+  color: #333;
+}
+
+.supply-chain-table td {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid #eee;
+}
+
+.supply-chain-table tbody tr:hover {
+  background: #f8f9fa;
+}
+
+.supply-chain-table tbody tr.urgent {
+  background: #fff3cd;
+}
+
+.sku-cell {
+  font-family: 'Courier New', monospace;
+  color: #666;
+  font-weight: 500;
+}
+
+.sku-cell code {
+  background: #f0f0f0;
+  padding: 0.25rem 0.5rem;
+  border-radius: 3px;
+}
+
+.product-cell {
+  font-weight: 600;
+}
+
+.numeric {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.status-cell {
+  text-align: center;
+}
+
+.status-badge {
+  display: inline-block;
+  padding: 0.4rem 0.8rem;
+  border-radius: 4px;
+  color: white;
+  font-weight: 500;
+  font-size: 0.85rem;
+}
+
+.date-cell {
+  text-align: center;
+}
+
+.urgency-label {
+  font-size: 0.75rem;
+  color: #dc2626;
+  font-weight: 600;
+  margin-top: 0.25rem;
+}
+
+/* Supply Chain Footer */
+.supply-chain-footer {
+  margin-top: 2rem;
+}
+
+.status-legend {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  margin-bottom: 2rem;
+  padding: 1rem;
+  background: #f8f9fa;
+  border-radius: 8px;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 0.9rem;
+}
+
+.legend-badge {
+  display: inline-block;
+  width: 24px;
+  height: 24px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.9rem;
+}
+
+.supply-chain-summary {
+  background: white;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 1.5rem;
+}
+
+.supply-chain-summary h3 {
+  margin-bottom: 1rem;
+  font-size: 1.1rem;
+}
+
+.supply-chain-summary ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.supply-chain-summary li {
+  padding: 0.5rem 0;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.supply-chain-summary li:last-child {
+  border-bottom: none;
+}
+
+/* Empty State */
+.empty-state {
+  text-align: center;
+  padding: 2rem;
+  color: #999;
+}
+
+.empty-state p {
+  margin: 0.5rem 0;
+  font-size: 1rem;
+}
+
+/* Error Message */
+.error-message {
+  background: #fee;
+  border: 1px solid #fcc;
+  color: #c00;
+  padding: 1.5rem;
+  border-radius: 8px;
+  text-align: center;
+  margin: 2rem 0;
+}
