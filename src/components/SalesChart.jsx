@@ -11,11 +11,17 @@ import {
   Legend,
   ResponsiveContainer
 } from 'recharts';
-import { filterMonthlyData } from '../utils/dateFilters';
+import { filterMonthlyData, filterByMonth } from '../utils/dateFilters';
 
 function SalesChart({ data, period = 'all' }) {
   const chartData = useMemo(() => {
-    const filtered = period === 'all' ? data : filterMonthlyData(data, period);
+    let filtered = data;
+    
+    if (period !== 'all') {
+      // Check if it's a month key (YYYY-MM format)
+      const isMonthKey = period && period.match(/^\d{4}-\d{2}$/);
+      filtered = isMonthKey ? filterByMonth(data, period) : filterMonthlyData(data, period);
+    }
     
     return filtered
       .filter(m => m.orders > 0)

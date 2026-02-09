@@ -3,7 +3,7 @@ import { filterByMonth, calculateMetrics, getPeriodLabel, getMonthDateRange, get
 import { SalesChart } from './SalesChart';
 
 export default function SummaryCards({ data }) {
-  const [selectedMonth, setSelectedMonth] = useState('all');
+  const [selectedMonth, setSelectedMonth] = useState('2026-02');
 
   // Generate available months from data
   const availableMonths = useMemo(() => {
@@ -73,18 +73,24 @@ export default function SummaryCards({ data }) {
       <div className="summary-header">
         <h2>📊 Overview</h2>
         <div className="month-selector">
-          <select 
-            value={selectedMonth}
-            onChange={(e) => setSelectedMonth(e.target.value)}
-            className="month-dropdown"
+          <button 
+            className={`period-button ${selectedMonth === '2026-02' ? 'active' : ''}`}
+            onClick={() => setSelectedMonth('2026-02')}
           >
-            <option value="all">All Time (YTD/all data)</option>
-            {availableMonths.map(month => (
-              <option key={month} value={month}>
-                {getPeriodLabel(month)}
-              </option>
-            ))}
-          </select>
+            Feb 2026
+          </button>
+          <button 
+            className={`period-button ${selectedMonth === '2026-01' ? 'active' : ''}`}
+            onClick={() => setSelectedMonth('2026-01')}
+          >
+            Jan 2026
+          </button>
+          <button 
+            className={`period-button ${selectedMonth === 'all' ? 'active' : ''}`}
+            onClick={() => setSelectedMonth('all')}
+          >
+            All Time
+          </button>
         </div>
       </div>
 

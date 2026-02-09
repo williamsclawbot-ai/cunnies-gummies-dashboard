@@ -9,42 +9,48 @@
   },
   "monthly_trends": [
     {
-      "month": 2025,
+      "month": "2025-09-01",
+      "monthYear": "2025-09",
       "orders": 3,
       "qty_per_order": 1.7,
       "aov": 56.66,
       "returns": -3
     },
     {
-      "month": 2025,
+      "month": "2025-10-01",
+      "monthYear": "2025-10",
       "orders": 9906,
       "qty_per_order": 1.5,
       "aov": 86.181,
       "returns": -16
     },
     {
-      "month": 2025,
+      "month": "2025-11-01",
+      "monthYear": "2025-11",
       "orders": 5492,
       "qty_per_order": 1.4,
       "aov": 82.896,
       "returns": -7
     },
     {
-      "month": 2025,
+      "month": "2025-12-01",
+      "monthYear": "2025-12",
       "orders": 8806,
       "qty_per_order": 1.5,
       "aov": 88.551,
       "returns": -11
     },
     {
-      "month": 2026,
+      "month": "2026-01-01",
+      "monthYear": "2026-01",
       "orders": 13666,
       "qty_per_order": 1.4,
       "aov": 81.062,
       "returns": -47
     },
     {
-      "month": 2026,
+      "month": "2026-02-01",
+      "monthYear": "2026-02",
       "orders": 2768,
       "qty_per_order": 1.4,
       "aov": 82.212,

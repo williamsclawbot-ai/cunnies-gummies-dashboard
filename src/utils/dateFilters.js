@@ -100,6 +100,11 @@ export function filterMonthlyData(monthlyData, period) {
 export function filterByMonth(monthlyData, monthKey) {
   if (!monthlyData || !monthKey || monthKey === 'all') return monthlyData;
 
+  // Check if data has monthYear field (new format)
+  if (monthlyData.length > 0 && monthlyData[0].monthYear) {
+    return monthlyData.filter(month => month.monthYear === monthKey);
+  }
+
   const { startDate, endDate } = getMonthDateRange(monthKey);
 
   return monthlyData.filter(month => {
@@ -159,7 +164,8 @@ export function getPeriodLabel(period) {
   if (period && period.match(/^\d{4}-\d{2}$/)) {
     const [year, month] = period.split('-');
     const date = new Date(parseInt(year), parseInt(month) - 1, 1);
-    return date.toLocaleDateString('en-AU', { month: 'long', year: 'numeric' });
+    const label = date.toLocaleDateString('en-AU', { month: 'long', year: 'numeric' });
+    return label;
   }
   
   return period;

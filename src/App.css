@@ -1342,6 +1342,37 @@ body {
   align-items: center;
 }
 
+.month-selector {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.period-button {
+  padding: 0.6rem 1.2rem;
+  border: 2px solid #ddd;
+  background: white;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: all 0.3s ease;
+  color: #666;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.period-button:hover {
+  border-color: #667eea;
+  color: #667eea;
+  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.15);
+}
+
+.period-button.active {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border-color: #667eea;
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
 .month-dropdown {
   padding: 0.6rem 1rem;
   border: 1px solid #ddd;
