@@ -162,7 +162,7 @@ The data service layer is designed to accept real Shopify data. To integrate:
 ```javascript
 // src/services/shopifyClient.js (new file needed)
 const SHOPIFY_STORE = 'cunnies-gummies';
-const SHOPIFY_ACCESS_TOKEN = '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';
+const SHOPIFY_ACCESS_TOKEN = process.env.VITE_SHOPIFY_ACCESS_TOKEN;
 ```
 
 #### 2. Shopify GraphQL Queries
@@ -232,9 +232,9 @@ export async function fetchInventoryLevels() {
 
 #### 4. Authentication Setup
 ```javascript
-// Add to .env (not committed)
+// Add to .env.local (not committed)
 VITE_SHOPIFY_STORE=cunnies-gummies
-VITE_SHOPIFY_ACCESS_TOKEN=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
+VITE_SHOPIFY_ACCESS_TOKEN=<your-shopify-access-token>
 
 // src/services/shopifyClient.js
 const client = new ApolloClient({
