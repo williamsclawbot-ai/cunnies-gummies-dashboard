@@ -127,7 +127,7 @@ export default function SummaryCards({ data }) {
 
       <div className="chart-section" style={{ marginTop: '2rem' }}>
         <h3>Sales Trend</h3>
-        <SalesChart data={data.monthly_trends} period={selectedMonth} />
+        <SalesChart data={data.monthly_trends} period={selectedMonth} selectedMonth={selectedMonth} />
       </div>
     </div>
   );
