@@ -2,7 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { filterProductData, getPeriodLabel, filterByMonth } from '../utils/dateFilters';
 
-export default function ProductAnalysis({ products, monthlyData }) {
+export default function ProductAnalysis({ products, monthlyData, monthlyProducts }) {
   const [selectedMonth, setSelectedMonth] = useState('2026-02');
 
   // Generate available months from data
@@ -23,8 +23,8 @@ export default function ProductAnalysis({ products, monthlyData }) {
 
   const filteredProducts = useMemo(() => {
     if (selectedMonth === 'all') return products;
-    return filterProductData(products, monthlyData, selectedMonth);
-  }, [products, monthlyData, selectedMonth]);
+    return filterProductData(products, monthlyData, selectedMonth, monthlyProducts);
+  }, [products, monthlyData, selectedMonth, monthlyProducts]);
 
   const chartData = filteredProducts.map(p => ({
     name: p.name.split(' ').slice(0, 2).join(' '),

@@ -110,6 +110,7 @@ function App() {
             <ProductAnalysis 
               products={dashboardData.products} 
               monthlyData={dashboardData.monthly_trends}
+              monthlyProducts={dashboardData.monthly_products}
             />
           </div>
         )}

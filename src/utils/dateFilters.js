@@ -173,16 +173,24 @@ export function getPeriodLabel(period) {
 
 /**
  * Filter product data by time period or specific month
- * @param {Array} productData - Product data array
+ * @param {Array} productData - Product data array (fallback)
  * @param {Array} monthlyData - Monthly trends data
  * @param {string} period - Time period or month key (YYYY-MM)
- * @returns {Array} Products with adjusted metrics for period
+ * @param {Object} monthlyProductData - Monthly product breakdowns (new!)
+ * @returns {Array} Products with actual monthly data if available
  */
-export function filterProductData(productData, monthlyData, period) {
+export function filterProductData(productData, monthlyData, period, monthlyProductData) {
   if (!productData || period === 'all') return productData;
 
   // Check if it's a month key (YYYY-MM format)
   const isMonthKey = period && period.match(/^\d{4}-\d{2}$/);
+  
+  // If we have monthly product data and it's a single month, use it directly!
+  if (isMonthKey && monthlyProductData && monthlyProductData[period]) {
+    return monthlyProductData[period];
+  }
+  
+  // Fallback: Use proportional distribution for multi-month periods
   const filteredMonthly = isMonthKey ? filterByMonth(monthlyData, period) : filterMonthlyData(monthlyData, period);
   
   if (filteredMonthly.length === 0) return productData;

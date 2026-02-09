@@ -313,5 +313,214 @@
       "safety_stock_level": 106,
       "last_updated": "2026-02-09T10:47:52.750Z"
     }
-  ]
+  ],
+  "monthly_products": {
+    "2025-09": [
+      {
+        "name": "Sour Watermelon",
+        "sku": 102270,
+        "units_sold": 2
+      },
+      {
+        "name": "Sour Peach",
+        "sku": 102269,
+        "units_sold": 1
+      },
+      {
+        "name": "Strawberry",
+        "sku": 102255,
+        "units_sold": 1
+      },
+      {
+        "name": "Green Apple",
+        "sku": 101972,
+        "units_sold": 1
+      }
+    ],
+    "2025-10": [
+      {
+        "name": "Sour Watermelon",
+        "sku": 102270,
+        "units_sold": 6786
+      },
+      {
+        "name": "Sour Peach",
+        "sku": 102269,
+        "units_sold": 4129
+      },
+      {
+        "name": "Strawberry",
+        "sku": 102255,
+        "units_sold": 2040
+      },
+      {
+        "name": "Green Apple",
+        "sku": 101972,
+        "units_sold": 1556
+      },
+      {
+        "name": "Raspberry Lemonade Pre-Workout",
+        "sku": 102272,
+        "units_sold": 182
+      },
+      {
+        "name": "Watermelon Pre-Workout",
+        "sku": 102273,
+        "units_sold": 84
+      },
+      {
+        "name": "Green Apple Pre-Workout",
+        "sku": 102271,
+        "units_sold": 82
+      }
+    ],
+    "2025-11": [
+      {
+        "name": "Sour Watermelon",
+        "sku": 102270,
+        "units_sold": 3327
+      },
+      {
+        "name": "Sour Peach",
+        "sku": 102269,
+        "units_sold": 2199
+      },
+      {
+        "name": "Strawberry",
+        "sku": 102255,
+        "units_sold": 1189
+      },
+      {
+        "name": "Green Apple",
+        "sku": 101972,
+        "units_sold": 791
+      },
+      {
+        "name": "Raspberry Lemonade Pre-Workout",
+        "sku": 102272,
+        "units_sold": 96
+      },
+      {
+        "name": "Watermelon Pre-Workout",
+        "sku": 102273,
+        "units_sold": 46
+      },
+      {
+        "name": "Green Apple Pre-Workout",
+        "sku": 102271,
+        "units_sold": 41
+      }
+    ],
+    "2025-12": [
+      {
+        "name": "Sour Watermelon",
+        "sku": 102270,
+        "units_sold": 5924
+      },
+      {
+        "name": "Sour Peach",
+        "sku": 102269,
+        "units_sold": 3677
+      },
+      {
+        "name": "Strawberry",
+        "sku": 102255,
+        "units_sold": 1958
+      },
+      {
+        "name": "Green Apple",
+        "sku": 101972,
+        "units_sold": 1355
+      },
+      {
+        "name": "Raspberry Lemonade Pre-Workout",
+        "sku": 102272,
+        "units_sold": 149
+      },
+      {
+        "name": "Watermelon Pre-Workout",
+        "sku": 102273,
+        "units_sold": 79
+      },
+      {
+        "name": "Green Apple Pre-Workout",
+        "sku": 102271,
+        "units_sold": 67
+      }
+    ],
+    "2026-01": [
+      {
+        "name": "Sour Watermelon",
+        "sku": 102270,
+        "units_sold": 8477
+      },
+      {
+        "name": "Sour Peach",
+        "sku": 102269,
+        "units_sold": 5537
+      },
+      {
+        "name": "Strawberry",
+        "sku": 102255,
+        "units_sold": 2730
+      },
+      {
+        "name": "Green Apple",
+        "sku": 101972,
+        "units_sold": 1959
+      },
+      {
+        "name": "Raspberry Lemonade Pre-Workout",
+        "sku": 102272,
+        "units_sold": 223
+      },
+      {
+        "name": "Watermelon Pre-Workout",
+        "sku": 102273,
+        "units_sold": 107
+      },
+      {
+        "name": "Green Apple Pre-Workout",
+        "sku": 102271,
+        "units_sold": 99
+      }
+    ],
+    "2026-02": [
+      {
+        "name": "Sour Watermelon",
+        "sku": 102270,
+        "units_sold": 1670
+      },
+      {
+        "name": "Sour Peach",
+        "sku": 102269,
+        "units_sold": 1134
+      },
+      {
+        "name": "Strawberry",
+        "sku": 102255,
+        "units_sold": 569
+      },
+      {
+        "name": "Green Apple",
+        "sku": 101972,
+        "units_sold": 415
+      },
+      {
+        "name": "Raspberry Lemonade Pre-Workout",
+        "sku": 102272,
+        "units_sold": 44
+      },
+      {
+        "name": "Watermelon Pre-Workout",
+        "sku": 102273,
+        "units_sold": 22
+      },
+      {
+        "name": "Green Apple Pre-Workout",
+        "sku": 102271,
+        "units_sold": 21
+      }
+    ]
+  }
 }
