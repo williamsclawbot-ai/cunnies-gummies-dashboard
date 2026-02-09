@@ -231,3 +231,4 @@ dashboard/
 
 **Built with React + Recharts + Vite**  
 *Last updated: Feb 8, 2026*
+# hls-canva-dashboard
