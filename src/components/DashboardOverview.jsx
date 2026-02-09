@@ -16,10 +16,12 @@ export default function DashboardOverview() {
   const [topVariants, setTopVariants] = useState(null);
   const [chartData, setChartData] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     const loadData = async () => {
       setLoading(true);
+      setError(null);
       try {
         const [ordersData, salesData, variantsData] = await Promise.all([
           fetchOrdersByRange(timeRange),
@@ -33,24 +35,29 @@ export default function DashboardOverview() {
 
         // Aggregate top 3 variants for chart
         const top3 = variantsData.slice(0, 3);
-        const allTimeSeries = await Promise.all(
-          top3.map(v => fetchProductTimeSeries(v.sku, timeRange))
-        );
+        if (top3.length > 0) {
+          const allTimeSeries = await Promise.all(
+            top3.map(v => fetchProductTimeSeries(v.sku, timeRange))
+          );
 
-        // Prepare chart data (by week)
-        const chartPoints = {};
-        allTimeSeries.forEach(series => {
-          series.byWeek.forEach(point => {
-            if (!chartPoints[point.date]) {
-              chartPoints[point.date] = { date: point.date };
+          // Prepare chart data (by week)
+          const chartPoints = {};
+          allTimeSeries.forEach(series => {
+            if (series.byWeek && series.byWeek.length > 0) {
+              series.byWeek.forEach(point => {
+                if (!chartPoints[point.date]) {
+                  chartPoints[point.date] = { date: point.date };
+                }
+                chartPoints[point.date][series.sku] = point.grossSales;
+              });
             }
-            chartPoints[point.date][series.sku] = point.grossSales;
           });
-        });
 
-        setChartData(Object.values(chartPoints).sort((a, b) => new Date(a.date) - new Date(b.date)));
+          setChartData(Object.values(chartPoints).sort((a, b) => new Date(a.date) - new Date(b.date)));
+        }
       } catch (error) {
         console.error('Error loading dashboard data:', error);
+        setError(error.message || 'Failed to load dashboard data');
       } finally {
         setLoading(false);
       }
@@ -76,6 +83,25 @@ export default function DashboardOverview() {
 
   if (loading) {
     return <div style={{ textAlign: 'center', padding: '2rem' }}>Loading dashboard...</div>;
+  }
+
+  if (error) {
+    return (
+      <div style={{ 
+        textAlign: 'center', 
+        padding: '2rem',
+        color: '#d32f2f',
+        backgroundColor: '#ffebee',
+        borderRadius: '4px',
+        margin: '1rem'
+      }}>
+        <h3>⚠️ Error Loading Data</h3>
+        <p>{error}</p>
+        <p style={{ fontSize: '0.9rem', color: '#999' }}>
+          Check the browser console (F12 → Console) for details.
+        </p>
+      </div>
+    );
   }
 
   return (
