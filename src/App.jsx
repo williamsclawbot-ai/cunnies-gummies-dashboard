@@ -5,6 +5,7 @@ import ProductAnalysis from './components/ProductAnalysis';
 import SupplyChainTracker from './components/SupplyChainTracker';
 import ReorderTable from './components/ReorderTable';
 import ForecastCard from './components/ForecastCard';
+import MyFeedPage from './components/MyFeedPage';
 
 function App() {
   const [activeTab, setActiveTab] = useState('overview');
@@ -74,19 +75,25 @@ function App() {
       </header>
 
       <nav className="tabs">
-        <button 
+        <button
+          className={`tab ${activeTab === 'feed' ? 'active' : ''}`}
+          onClick={() => setActiveTab('feed')}
+        >
+          📡 My Feed
+        </button>
+        <button
           className={`tab ${activeTab === 'overview' ? 'active' : ''}`}
           onClick={() => setActiveTab('overview')}
         >
           📊 Overview
         </button>
-        <button 
+        <button
           className={`tab ${activeTab === 'products' ? 'active' : ''}`}
           onClick={() => setActiveTab('products')}
         >
           🏆 Products
         </button>
-        <button 
+        <button
           className={`tab ${activeTab === 'supply' ? 'active' : ''}`}
           onClick={() => setActiveTab('supply')}
         >
@@ -95,6 +102,12 @@ function App() {
       </nav>
 
       <main className="main-content">
+        {activeTab === 'feed' && (
+          <div className="tab-content">
+            <MyFeedPage />
+          </div>
+        )}
+
         {activeTab === 'overview' && (
           <div className="tab-content">
             <SummaryCards data={dashboardData} />
