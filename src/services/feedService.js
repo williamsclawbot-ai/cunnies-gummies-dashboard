@@ -6,13 +6,11 @@ const AI_KEYWORDS = [
   'openai', 'gemini', 'llm', 'prompt engineering',
 ];
 
-export async function fetchAIVideos() {
-  // Return demo data directly — swap in a real API call when ready
+export function fetchAIVideos() {
   return getDemoVideos();
 }
 
-export async function fetchAINews() {
-  // Return demo data directly — swap in a real API call when ready
+export function fetchAINews() {
   return getDemoNews();
 }
 
