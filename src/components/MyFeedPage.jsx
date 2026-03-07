@@ -28,7 +28,7 @@ function VideoCard({ video, isExpanded, onToggle }) {
           <h3 className="feed-video-title">{video.title}</h3>
         </a>
         <div className="feed-video-tags">
-          {video.tags.map((tag, i) => (
+          {(video.tags || []).map((tag, i) => (
             <span key={i} className="feed-tag">{tag}</span>
           ))}
         </div>
@@ -101,35 +101,51 @@ export default function MyFeedPage() {
   const [videos, setVideos] = useState([]);
   const [news, setNews] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [expandedVideo, setExpandedVideo] = useState(null);
   const [activeSection, setActiveSection] = useState('all');
   const [videoFilter, setVideoFilter] = useState('all');
 
   useEffect(() => {
     async function loadFeed() {
-      setLoading(true);
-      const [videoData, newsData] = await Promise.all([
-        fetchAIVideos(),
-        fetchAINews(),
-      ]);
-      setVideos(videoData);
-      setNews(newsData);
-      setLoading(false);
+      try {
+        setLoading(true);
+        setError(null);
+        const [videoData, newsData] = await Promise.all([
+          fetchAIVideos(),
+          fetchAINews(),
+        ]);
+        setVideos(videoData || []);
+        setNews(newsData || []);
+      } catch (err) {
+        console.error('Feed load error:', err);
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
     }
     loadFeed();
   }, []);
 
-  const tagSet = [...new Set(videos.flatMap(v => v.tags))];
+  const tagSet = [...new Set(videos.flatMap(v => (v.tags || [])))];
 
   const filteredVideos = videoFilter === 'all'
     ? videos
-    : videos.filter(v => v.tags.includes(videoFilter));
+    : videos.filter(v => (v.tags || []).includes(videoFilter));
 
   if (loading) {
     return (
       <div className="feed-loading">
         <div className="feed-loading-spinner" />
         <p>Loading your feed...</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="feed-empty">
+        <p>Failed to load feed: {error}</p>
       </div>
     );
   }

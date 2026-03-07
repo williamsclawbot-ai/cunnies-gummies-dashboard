@@ -7,28 +7,12 @@ const AI_KEYWORDS = [
 ];
 
 export async function fetchAIVideos() {
-  try {
-    const response = await fetch('/api/youtube-feed');
-    if (response.ok) {
-      const data = await response.json();
-      if (data.videos && data.videos.length > 0) return data.videos;
-    }
-  } catch (err) {
-    console.warn('Using demo video data:', err);
-  }
+  // Return demo data directly — swap in a real API call when ready
   return getDemoVideos();
 }
 
 export async function fetchAINews() {
-  try {
-    const response = await fetch('/api/ai-news');
-    if (response.ok) {
-      const data = await response.json();
-      if (data.articles && data.articles.length > 0) return data.articles;
-    }
-  } catch (err) {
-    console.warn('Using demo news data:', err);
-  }
+  // Return demo data directly — swap in a real API call when ready
   return getDemoNews();
 }
 
